@@ -58,7 +58,16 @@ fn set_value(value: bool) {
 
 /// Emit a Flipped event
 fn emit_flipped(new_value: bool) {
-    todo!()
+    let _event = Flipper::Flipped { new_value };
+
+    // The signature hash is the first topic (the event ID)
+    let topics = [Flipper::Flipped::SIGNATURE_HASH.0];
+
+    // Manually encode the data (bool as u256/32 bytes)
+    let mut data = [0u8; 32];
+    data[31] = if new_value { 1 } else { 0 };
+
+    api::deposit_event(&topics, &data);
 }
 
 /// Constructor: Initialize the flipper with false
