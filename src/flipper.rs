@@ -35,13 +35,25 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 const VALUE_KEY: [u8; 32] = [0u8; 32];
 
 /// Get the current boolean value from storage
-fn get_value() -> bool { 
-    todo!()
- }
+fn get_value() -> bool {
+    let mut value_bytes = vec![0u8; 32];
+    let mut output = value_bytes.as_mut_slice();
+
+    match api::get_storage(StorageFlags::empty(), &VALUE_KEY, &mut output) {
+        Ok(_) => {
+            // Check if the last byte is non-zero (Solidity stores bool as uint8)
+            output[31] != 0
+        }
+        Err(_) => false,
+    }
+}
 
 /// Set the boolean value in storage
 fn set_value(value: bool) {
-    todo!()
+    let mut value_bytes = vec![0u8; 32];
+    value_bytes[31] = if value { 1 } else { 0 };
+
+    api::set_storage(StorageFlags::empty(), &VALUE_KEY, &value_bytes);
 }
 
 /// Emit a Flipped event
