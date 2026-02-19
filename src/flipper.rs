@@ -82,5 +82,42 @@ pub extern "C" fn deploy() {
 #[no_mangle]
 #[polkavm_derive::polkavm_export]
 pub extern "C" fn call() {
-    todo!()
+    // 1. input handling
+    let call_data_len = api::call_data_size();
+    let mut call_data = vec![0u8; call_data_len as usize];
+    api::call_data_copy(&mut call_data, 0);
+
+    // 2. selector extraction
+    // We expect at least 4 bytes for the function selector
+    if call_data.len() < 4 {
+        api::return_value(ReturnFlags::REVERT, b"Input too short");
+    }
+
+    let selector: [u8; 4] = call_data[0..4].try_into().unwrap();
+
+    // 3. dispatching
+    match selector {
+        // Handle flip() function call
+        Flipper::flipCall::SELECTOR => {
+            let current = get_value();
+            let new_value = !current;
+            set_value(new_value);
+            emit_flipped(new_value);
+        }
+
+        // Handle get() function call
+        Flipper::getCall::SELECTOR => {
+            let current = get_value();
+
+            // 4. return encoding
+            let mut return_data = [0u8; 32];
+            return_data[31] = if current { 1 } else { 0 };
+            api::return_value(ReturnFlags::empty(), &return_data);
+        }
+
+        _ => {
+            // Unknown function selector - revert
+            api::return_value(ReturnFlags::REVERT, b"Unknown function");
+        }
+    }
 }
