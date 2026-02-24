@@ -106,9 +106,34 @@ Call `get()` again to see the flipped value.
 cast call $RUST_ADDRESS "get() returns (bool)"
 ```
 
+## Frontend
+
+A Next.js app in `frontend/` that lets you connect a wallet and interact with the deployed Flipper contract via the browser.
+
+### Setup
+
+1. **Install dependencies**:
+    ```bash
+    cd frontend
+    npm install
+    ```
+
+2. **Configure the contract address**:
+    ```bash
+    cp .env.example .env.local
+    ```
+    Edit `.env.local` and set `NEXT_PUBLIC_CONTRACT_ADDRESS` to your deployed contract address (from the deployment step above).
+
+3. **Run the dev server**:
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) in a browser with a wallet extension (e.g., MetaMask) configured for the Polkadot Hub Testnet (chain ID `420420417`, RPC `https://services.polkadothub-rpc.com/testnet`). Alternatively, you can visit https://docs.polkadot.com/smart-contracts/connect/#connect-to-polkadot and click on the corresponding button to add the new network to Metamask.
+
 ## Project Structure
 
 - `src/flipper.rs`: The smart contract logic.
 - `Flipper.sol`: The Solidity interface/ABI definition.
     > **Note**: While this file defines the ABI, the Rust contract uses the `sol!` macro to define the interface inline for demonstration purposes. In a real-world scenario, you could generate the ABI from this Solidity file.
 - `Cargo.toml`: Project dependencies and configuration.
+- `frontend/`: Next.js app using wagmi + viem to interact with the contract.
