@@ -5,13 +5,13 @@ import {
   useReadContract,
   useWriteContract,
   useWaitForTransactionReceipt,
-  useWatchContractEvent,
-  useAccount,
+  useConnection,
 } from "wagmi";
+import { decodeEventLog } from "viem";
 import { FLIPPER_ABI, FLIPPER_ADDRESS } from "@/config/contract";
 
 export function FlipperCard() {
-  const { isConnected } = useAccount();
+  const { isConnected } = useConnection();
   const [events, setEvents] = useState<{ value: boolean; time: string }[]>([]);
 
   const {
@@ -22,47 +22,48 @@ export function FlipperCard() {
     address: FLIPPER_ADDRESS,
     abi: FLIPPER_ABI,
     functionName: "get",
-    query: {
-      refetchInterval: 10_000,
-    },
   });
 
-  const {
-    writeContract,
-    data: txHash,
-    isPending: isWritePending,
-    reset,
-  } = useWriteContract();
+  const flip = useWriteContract();
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({ hash: txHash });
+  const { data: receipt, isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({ hash: flip.data });
 
   useEffect(() => {
     if (isConfirmed) {
       refetch();
-      const timer = setTimeout(() => reset(), 3000);
+      if (receipt?.logs) {
+        const newEvents = receipt.logs
+          .map((log) => {
+            try {
+              const decoded = decodeEventLog({
+                abi: FLIPPER_ABI,
+                data: log.data,
+                topics: log.topics,
+              });
+              if (decoded.eventName === "Flipped") {
+                return {
+                  value: (decoded.args as { new_value: boolean }).new_value,
+                  time: new Date().toLocaleTimeString(),
+                };
+              }
+            } catch {}
+            return null;
+          })
+          .filter((e): e is { value: boolean; time: string } => e !== null);
+        setEvents((prev) => [...newEvents, ...prev].slice(0, 20));
+      }
+      const timer = setTimeout(() => flip.reset(), 3000);
       return () => clearTimeout(timer);
     }
-  }, [isConfirmed, refetch, reset]);
-
-  useWatchContractEvent({
-    address: FLIPPER_ADDRESS,
-    abi: FLIPPER_ABI,
-    eventName: "Flipped",
-    onLogs(logs) {
-      const newEvents = logs.map((log) => ({
-        value: log.args.new_value as boolean,
-        time: new Date().toLocaleTimeString(),
-      }));
-      setEvents((prev) => [...newEvents, ...prev].slice(0, 20));
-    },
-  });
+  }, [isConfirmed, receipt, refetch, flip.reset]);
 
   const handleFlip = () => {
-    writeContract({
+    flip.mutate({
       address: FLIPPER_ADDRESS,
       abi: FLIPPER_ABI,
       functionName: "flip",
+      gas: 200_000n,
     });
   };
 
@@ -80,10 +81,10 @@ export function FlipperCard() {
       {isConnected && (
         <button
           onClick={handleFlip}
-          disabled={isWritePending || isConfirming}
+          disabled={flip.isPending || isConfirming}
           className="flip-button"
         >
-          {isWritePending
+          {flip.isPending
             ? "Confirm in wallet..."
             : isConfirming
               ? "Confirming..."
@@ -93,9 +94,9 @@ export function FlipperCard() {
         </button>
       )}
 
-      {txHash && (
+      {flip.data && (
         <p className="tx-hash">
-          Tx: {txHash.slice(0, 10)}...{txHash.slice(-8)}
+          Tx: {flip.data.slice(0, 10)}...{flip.data.slice(-8)}
         </p>
       )}
 
