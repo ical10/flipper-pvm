@@ -63,7 +63,7 @@ export function FlipperCard() {
       address: FLIPPER_ADDRESS,
       abi: FLIPPER_ABI,
       functionName: "flip",
-      gas: 200_000n,
+      gas: BigInt(200_000),
     });
   };
 
