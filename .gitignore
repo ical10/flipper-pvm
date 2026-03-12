@@ -1,3 +1,12 @@
-/target
+# Rust / Contract
+contracts/target/
 *.polkavm
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
+# Misc
 docs/
+.env.local

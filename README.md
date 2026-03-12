@@ -23,11 +23,12 @@ Before getting started, ensure you have the following tools installed:
 To compile the contract into a `.polkavm` binary:
 
 ```bash
+cd contracts
 cargo build
 ```
 
 This will produce the PolkaVM bytecode at:
-`target/flipper.debug.polkavm` (or `target/flipper.polkavm` for release builds).
+`contracts/target/flipper.debug.polkavm` (or `contracts/target/flipper.polkavm` for release builds).
 
 ## Deployment
 
@@ -45,14 +46,14 @@ We use `cast` (from Foundry) to deploy the contract via the Ethereum JSON-RPC co
 
     **Option 1: Using `jq` (Recommended)**
     ```bash
-    RUST_ADDRESS=$(cast send --private-key $PRIVATE_KEY --create "$(xxd -p -c 99999 target/flipper.debug.polkavm)" --json | jq -r .contractAddress)
+    RUST_ADDRESS=$(cast send --private-key $PRIVATE_KEY --create "$(xxd -p -c 99999 contracts/target/flipper.debug.polkavm)" --json | jq -r .contractAddress)
     echo "Deployed at: $RUST_ADDRESS"
     ```
 
     **Option 2: Manual (No `jq`)**
     If you don't have `jq` installed, run the command without piping to it:
     ```bash
-    cast send --private-key $PRIVATE_KEY --create "$(xxd -p -c 99999 target/flipper.debug.polkavm)"
+    cast send --private-key $PRIVATE_KEY --create "$(xxd -p -c 99999 contracts/target/flipper.debug.polkavm)"
     ```
 
     You should see output similar to this:
@@ -106,9 +107,35 @@ Call `get()` again to see the flipped value.
 cast call $RUST_ADDRESS "get() returns (bool)"
 ```
 
+## Frontend
+
+A Next.js app in `frontend/` that lets you connect a wallet and interact with the deployed Flipper contract via the browser.
+
+### Setup
+
+1. **Install dependencies**:
+    ```bash
+    cd frontend
+    npm install
+    ```
+
+2. **Configure the contract address**:
+    ```bash
+    cp .env.example .env.local
+    ```
+    Edit `.env.local` and set `NEXT_PUBLIC_CONTRACT_ADDRESS` to your deployed contract address (from the deployment step above).
+
+3. **Run the dev server**:
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) in a browser with a wallet extension (e.g., MetaMask) configured for the Polkadot Hub Testnet (chain ID `420420417`, RPC `https://services.polkadothub-rpc.com/testnet`). Alternatively, you can visit https://docs.polkadot.com/smart-contracts/connect/#connect-to-polkadot and click on the corresponding button to add the new network to Metamask.
+
 ## Project Structure
 
-- `src/flipper.rs`: The smart contract logic.
-- `Flipper.sol`: The Solidity interface/ABI definition.
-    > **Note**: While this file defines the ABI, the Rust contract uses the `sol!` macro to define the interface inline for demonstration purposes. In a real-world scenario, you could generate the ABI from this Solidity file.
-- `Cargo.toml`: Project dependencies and configuration.
+- `contracts/`: The Flipper smart contract (Rust + Solidity ABI).
+  - `src/flipper.rs`: The smart contract logic.
+  - `Flipper.sol`: The Solidity interface/ABI definition.
+  - `Cargo.toml`: Project dependencies and configuration.
+    > **Note**: While `Flipper.sol` defines the ABI, the Rust contract uses the `sol!` macro to define the interface inline for demonstration purposes. In a real-world scenario, you could generate the ABI from this Solidity file.
+- `frontend/`: Next.js app using wagmi + viem to interact with the contract.
