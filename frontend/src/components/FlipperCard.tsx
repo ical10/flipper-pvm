@@ -26,8 +26,11 @@ export function FlipperCard() {
 
   const flip = useWriteContract();
 
-  const { data: receipt, isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({ hash: flip.data });
+  const {
+    data: receipt,
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+  } = useWaitForTransactionReceipt({ hash: flip.data });
 
   useEffect(() => {
     if (isConfirmed) {
@@ -56,7 +59,7 @@ export function FlipperCard() {
       const timer = setTimeout(() => flip.reset(), 3000);
       return () => clearTimeout(timer);
     }
-  }, [isConfirmed, receipt, refetch, flip.reset]);
+  }, [isConfirmed, receipt, refetch, flip]);
 
   const handleFlip = () => {
     flip.mutate({
@@ -67,15 +70,17 @@ export function FlipperCard() {
     });
   };
 
+  if (currentValue === undefined) {
+    return;
+  }
+
   return (
     <div className="flipper-card">
       <h2>Flipper</h2>
 
       <div className="value-display">
         <span className="label">Current Value</span>
-        <span className="value">
-          {isReading ? "Loading..." : currentValue ? "TRUE" : "FALSE"}
-        </span>
+        <span className="value">{isReading ? "Loading..." : currentValue ? "TRUE" : "FALSE"}</span>
       </div>
 
       {isConnected && (

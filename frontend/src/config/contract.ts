@@ -20,5 +20,8 @@ export const FLIPPER_ABI = [
   },
 ] as const;
 
-export const FLIPPER_ADDRESS = process.env
-  .NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`;
+const address = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+if (!address || !address.startsWith("0x")) {
+  throw new Error("env is missing or invalid");
+}
+export const FLIPPER_ADDRESS = address as `0x${string}`;
