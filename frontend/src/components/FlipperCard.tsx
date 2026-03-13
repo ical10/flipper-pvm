@@ -32,8 +32,11 @@ export function FlipperCard() {
     isSuccess: isConfirmed,
   } = useWaitForTransactionReceipt({ hash: flip.data });
 
+  const [lastProcessedTx, setLastProcessedTx] = useState<`0x${string}`>();
+
   useEffect(() => {
-    if (isConfirmed) {
+    if (isConfirmed && receipt && flip.data !== lastProcessedTx) {
+      setLastProcessedTx(flip.data);
       refetch();
       if (receipt?.logs) {
         const newEvents = receipt.logs
@@ -59,7 +62,7 @@ export function FlipperCard() {
       const timer = setTimeout(() => flip.reset(), 3000);
       return () => clearTimeout(timer);
     }
-  }, [isConfirmed, receipt, refetch, flip]);
+  }, [isConfirmed, receipt, refetch, flip.data, lastProcessedTx]);
 
   const handleFlip = () => {
     flip.mutate({
@@ -77,6 +80,14 @@ export function FlipperCard() {
   return (
     <div className="flipper-card">
       <h2>Flipper</h2>
+      <a
+        href={`https://blockscout-testnet.polkadot.io/address/${FLIPPER_ADDRESS}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="contract-link"
+      >
+        Contract: {FLIPPER_ADDRESS.slice(0, 6)}...{FLIPPER_ADDRESS.slice(-4)}
+      </a>
 
       <div className="value-display">
         <span className="label">Current Value</span>

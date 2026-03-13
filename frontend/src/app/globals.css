@@ -1,21 +1,15 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --accent: #e81899;
-}
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --muted: #9ca3af;
-    --border: #374151;
-  }
-  html {
-    color-scheme: dark;
-  }
+:root {
+  --bg: #000000;
+  --fg: #e0e0e0;
+  --muted: #666666;
+  --dim: #444444;
+  --border: #555555;
+  --surface: #0a0a0a;
+  --accent: #e6007a;
+  --accent-dim: #e6007a33;
+  --font-mono: "IBM Plex Mono", "Menlo", "Consolas", monospace;
 }
 
 * {
@@ -24,71 +18,146 @@
   padding: 0;
 }
 
+html {
+  color-scheme: dark;
+}
+
 body {
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
-  color: var(--foreground);
-  background: var(--background);
+  font-family: var(--font-mono);
+  color: var(--fg);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* scanline overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.008) 2px,
+    rgba(255, 255, 255, 0.008) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
 }
 
 main {
-  max-width: 600px;
+  max-width: 540px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 3rem 1.5rem;
 }
 
 header {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 2rem;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
 }
 
+/* ── buttons ── */
+
 button {
+  font-family: var(--font-mono);
   padding: 0.5rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--background);
-  color: var(--foreground);
+  border-radius: 0;
+  background: transparent;
+  color: var(--fg);
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
 }
 
 button:hover:not(:disabled) {
   border-color: var(--accent);
+  color: var(--accent);
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 button:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 1px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ── wallet ── */
 
 .wallet-info {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
 }
 
-.chain-name {
+.wallet-info span {
   color: var(--muted);
 }
 
+.chain-name {
+  color: var(--muted) !important;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+/* ── flipper card ── */
+
 .flipper-card {
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.5rem;
+  padding: 2rem;
+  position: relative;
+}
+
+.flipper-card::before {
+  content: "[ FLIPPER ]";
+  position: absolute;
+  top: -0.6rem;
+  left: 1rem;
+  background: var(--bg);
+  padding: 0 0.5rem;
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 .flipper-card h2 {
-  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+  color: var(--fg);
+}
+
+.contract-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.contract-link:hover {
+  color: var(--accent);
 }
 
 .value-display {
@@ -96,60 +165,140 @@ button:focus-visible {
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: var(--border);
-  border-radius: 6px;
-  margin-bottom: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
 }
 
 .value-display .label {
-  color: var(--muted);
+  color: var(--dim);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .value-display .value {
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  color: var(--accent);
 }
+
+/* ── flip button ── */
 
 .flip-button {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.85rem;
   background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
+  color: #000000;
+  border: 1px solid var(--accent);
+  font-size: 0.85rem;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
 }
 
 .flip-button:hover:not(:disabled) {
-  opacity: 0.9;
+  background: transparent;
+  color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-dim);
 }
 
-.tx-hash {
-  margin-top: 0.75rem;
-  font-size: 0.8rem;
-  color: var(--muted);
-  word-break: break-all;
+.flip-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
+
+/* ── tx hash ── */
+
+.tx-hash {
+  margin-top: 1rem;
+  font-size: 0.7rem;
+  color: var(--dim);
+  word-break: break-all;
+  letter-spacing: 0.03em;
+}
+
+.tx-hash::before {
+  content: "> ";
+  color: var(--accent);
+}
+
+/* ── event log ── */
 
 .event-log {
   margin-top: 1.5rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px dashed var(--border);
   padding-top: 1rem;
 }
 
 .event-log h3 {
-  font-size: 0.875rem;
-  color: var(--muted);
-  margin-bottom: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--dim);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 .event-log ul {
   list-style: none;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .event-log li {
-  padding: 0.25rem 0;
+  padding: 0.35rem 0;
   border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.event-log li::before {
+  content: "// ";
+  color: var(--dim);
+}
+
+.event-log li strong {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── footer ── */
+
+.site-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+  text-align: center;
+}
+
+.tech-stack {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.8;
+}
+
+.footer-note {
+  margin-top: 0.75rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.github-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.github-link:hover {
+  color: var(--accent);
 }
